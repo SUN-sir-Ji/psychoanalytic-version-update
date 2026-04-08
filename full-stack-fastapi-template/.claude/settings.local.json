@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp:*)",
+      "Bash(xargs grep:*)",
+      "Bash(npm run:*)",
+      "Bash(bun run:*)",
+      "Bash(find . -name \"_layout-backup\" -type d -exec rm -rf {} +)",
+      "Bash(find .:*)",
+      "Bash(rm:*)"
+    ]
+  }
+}
