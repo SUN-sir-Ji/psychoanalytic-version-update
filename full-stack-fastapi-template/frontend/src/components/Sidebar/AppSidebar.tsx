@@ -1,4 +1,4 @@
-import {Home, MessageSquare, Brain, History, Mic, Video, TestTube2, Users } from "lucide-react"
+import { Briefcase, Home, MessageSquare, Brain, History, Mic, Video, TestTube2, Users } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"

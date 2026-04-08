@@ -4,7 +4,18 @@ from typing import Any
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models import Item, ItemCreate, User, UserCreate, UserUpdate
+from app.models import (
+    AnalysisRecord,
+    AnalysisRecordCreate,
+    AnalysisRecordUpdate,
+    File,
+    FileCreate,
+    Item,
+    ItemCreate,
+    User,
+    UserCreate,
+    UserUpdate,
+)
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
@@ -66,3 +77,74 @@ def create_item(*, session: Session, item_in: ItemCreate, owner_id: uuid.UUID) -
     session.commit()
     session.refresh(db_item)
     return db_item
+
+
+def create_analysis_record(
+    *, session: Session, record_in: AnalysisRecordCreate, user_id: uuid.UUID
+) -> AnalysisRecord:
+    db_obj = AnalysisRecord.model_validate(record_in, update={"user_id": user_id})
+    session.add(db_obj)
+    session.commit()
+    session.refresh(db_obj)
+    return db_obj
+
+
+def get_analysis_record(*, session: Session, record_id: uuid.UUID) -> AnalysisRecord | None:
+    statement = select(AnalysisRecord).where(AnalysisRecord.record_id == record_id)
+    return session.exec(statement).first()
+
+
+def get_analysis_records(
+    *, session: Session, user_id: uuid.UUID, skip: int = 0, limit: int = 100
+) -> list[AnalysisRecord]:
+    statement = (
+        select(AnalysisRecord)
+        .where(AnalysisRecord.user_id == user_id)
+        .offset(skip)
+        .limit(limit)
+    )
+    return session.exec(statement).all()
+
+
+def update_analysis_record(
+    *, session: Session, db_record: AnalysisRecord, record_in: AnalysisRecordUpdate
+) -> AnalysisRecord:
+    user_data = record_in.model_dump(exclude_unset=True)
+    db_record.sqlmodel_update(user_data)
+    session.add(db_record)
+    session.commit()
+    session.refresh(db_record)
+    return db_record
+
+
+def delete_analysis_record(*, session: Session, record_id: uuid.UUID) -> bool:
+    record = get_analysis_record(session=session, record_id=record_id)
+    if record:
+        session.delete(record)
+        session.commit()
+        return True
+    return False
+
+
+def create_file(*, session: Session, file_in: FileCreate, file_path: str, file_size: int | None) -> File:
+    db_obj = File.model_validate(
+        file_in, update={"file_path": file_path, "file_size": file_size}
+    )
+    session.add(db_obj)
+    session.commit()
+    session.refresh(db_obj)
+    return db_obj
+
+
+def get_files_by_record(*, session: Session, record_id: uuid.UUID) -> list[File]:
+    statement = select(File).where(File.record_id == record_id)
+    return session.exec(statement).all()
+
+
+def delete_file(*, session: Session, file_id: uuid.UUID) -> bool:
+    file = session.get(File, file_id)
+    if file:
+        session.delete(file)
+        session.commit()
+        return True
+    return False

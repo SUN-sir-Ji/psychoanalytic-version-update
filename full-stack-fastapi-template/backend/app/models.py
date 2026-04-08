@@ -1,13 +1,20 @@
 import uuid
 from datetime import datetime, timezone
+from enum import Enum
 
 from pydantic import EmailStr
-from sqlalchemy import DateTime
+from sqlmodel import DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
 
 def get_datetime_utc() -> datetime:
     return datetime.now(timezone.utc)
+
+
+class GenderEnum(str, Enum):
+    male = "male"
+    female = "female"
+    other = "other"
 
 
 # Shared properties
@@ -54,6 +61,7 @@ class User(UserBase, table=True):
         sa_type=DateTime(timezone=True),  # type: ignore
     )
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    analysis_records: list["AnalysisRecord"] | None = Relationship(back_populates="user", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -127,3 +135,105 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class AnalysisRecord(SQLModel, table=True):
+    __tablename__ = "analysis_records"
+    
+    record_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    person_name: str = Field(max_length=50, nullable=False)
+    gender: GenderEnum = Field(nullable=False)
+    age: int | None = Field(default=None, nullable=True)
+    birth_date: datetime | None = Field(default=None, nullable=True)
+    remarks: str | None = Field(default=None, nullable=True)
+    analysis_result: str | None = Field(default=None, nullable=True)
+    text_analysis_result: str | None = Field(default=None, nullable=True)
+    audio_analysis_result: str | None = Field(default=None, nullable=True)
+    video_analysis_result: str | None = Field(default=None, nullable=True)
+    record_time: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),
+    )
+    
+    user: User | None = Relationship(back_populates="analysis_records")
+    files: list["File"] | None = Relationship(back_populates="record", cascade_delete=True)
+
+
+class File(SQLModel, table=True):
+    __tablename__ = "files"
+    
+    file_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    record_id: uuid.UUID = Field(foreign_key="analysis_records.record_id", nullable=False)
+    file_name: str = Field(max_length=255, nullable=False)
+    file_path: str = Field(max_length=255, nullable=False)
+    file_size: int | None = Field(default=None, nullable=True)
+    file_type: str | None = Field(default=None, max_length=50, nullable=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),
+    )
+    
+    record: AnalysisRecord | None = Relationship(back_populates="files")
+
+
+class AnalysisRecordBase(SQLModel):
+    person_name: str = Field(max_length=50)
+    gender: GenderEnum
+    age: int | None = None
+    birth_date: datetime | None = None
+    remarks: str | None = None
+
+
+class AnalysisRecordCreate(AnalysisRecordBase):
+    pass
+
+
+class AnalysisRecordUpdate(SQLModel):
+    person_name: str | None = None
+    gender: GenderEnum | None = None
+    age: int | None = None
+    birth_date: datetime | None = None
+    remarks: str | None = None
+    analysis_result: str | None = None
+    text_analysis_result: str | None = None
+    audio_analysis_result: str | None = None
+    video_analysis_result: str | None = None
+
+
+class AnalysisRecordPublic(AnalysisRecordBase):
+    record_id: uuid.UUID
+    user_id: uuid.UUID
+    analysis_result: str | None = None
+    text_analysis_result: str | None = None
+    audio_analysis_result: str | None = None
+    video_analysis_result: str | None = None
+    record_time: datetime | None = None
+    files: list["FilePublic"] = []
+
+
+class AnalysisRecordsPublic(SQLModel):
+    data: list[AnalysisRecordPublic]
+    count: int
+
+
+class FileBase(SQLModel):
+    file_name: str
+    file_type: str | None = None
+
+
+class FileCreate(FileBase):
+    record_id: uuid.UUID
+
+
+class FilePublic(FileBase):
+    file_id: uuid.UUID
+    record_id: uuid.UUID
+    file_path: str
+    file_size: int | None = None
+    created_at: datetime | None = None
+
+
+class FilesPublic(SQLModel):
+    data: list[FilePublic]
+    count: int

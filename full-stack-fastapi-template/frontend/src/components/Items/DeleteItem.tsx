@@ -71,18 +71,18 @@ const DeleteItem = ({ id, onSuccess }: DeleteItemProps) => {
           </DialogHeader>
 
           <DialogFooter className="mt-4">
-              <DialogClose asChild>
-                <Button variant="outline" disabled={mutation.isPending}>
-                  取消
-                </Button>
-              </DialogClose>
-              <LoadingButton
-                variant="destructive"
-                type="submit"
-                loading={mutation.isPending}
-              >
-                删除
-              </LoadingButton>
+            <DialogClose asChild>
+              <Button variant="outline" disabled={mutation.isPending}>
+                取消
+              </Button>
+            </DialogClose>
+            <LoadingButton
+              variant="destructive"
+              type="submit"
+              loading={mutation.isPending}
+            >
+              删除
+            </LoadingButton>
           </DialogFooter>
         </form>
       </DialogContent>
