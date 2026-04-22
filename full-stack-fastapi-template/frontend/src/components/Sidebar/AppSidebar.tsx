@@ -1,4 +1,4 @@
-import {Home, MessageSquare, Brain, History, Mic, Video, TestTube2, Users } from "lucide-react"
+import { Home, MessageSquare, Users } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
@@ -12,22 +12,16 @@ import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
 
-const baseItems: Item[] = [
-  { icon: Home, title: "首页", path: "/" },
-  { icon: Brain, title: "心理状况分析", path: "/analysis" },
-  { icon: TestTube2, title: "在线心理测试", path: "/psychological-test" },
-  { icon: Mic, title: "在线音频录制", path: "/audio-recording" },
-  { icon: Video, title: "在线视频录制", path: "/video-recording" },
-  { icon: History, title: "历史分析记录", path: "/history" },
-  { icon: MessageSquare, title: "心理医生咨询", path: "/counselor-chat" },
+const adminItems: Item[] = [
+  { icon: Home, title: "首页", path: "/admin" },
+  { icon: Users, title: "用户管理", path: "/user-manage" },
+  { icon: MessageSquare, title: "会话历史", path: "/chat-history" },
 ]
 
 export function AppSidebar() {
+  // 管理员侧边栏使用 /admin/* 路径
+  const items = adminItems
   const { user: currentUser } = useAuth()
-
-  const items = currentUser?.is_superuser
-    ? [...baseItems, { icon: Users, title: "用户管理", path: "/admin" }]
-    : baseItems
 
   return (
     <Sidebar collapsible="icon">

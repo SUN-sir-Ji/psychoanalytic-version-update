@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { createFileRoute, redirect } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import { Suspense } from "react"
 
 import { type UserPublic, UsersService } from "@/client"
@@ -16,20 +16,12 @@ function getUsersQueryOptions() {
   }
 }
 
-export const Route = createFileRoute("/_layout/admin")({
-  component: Admin,
-  beforeLoad: async () => {
-    const user = await UsersService.readUserMe()
-    if (!user.is_superuser) {
-      throw redirect({
-        to: "/",
-      })
-    }
-  },
+export const Route = createFileRoute("/_admin-layout/user-manage")({
+  component: UserManage,
   head: () => ({
     meta: [
       {
-        title: "用户管理 - 心理测评系统",
+        title: "用户管理",
       },
     ],
   }),
@@ -55,9 +47,9 @@ function UsersTable() {
   )
 }
 
-function Admin() {
+function UserManage() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6 md:p-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">用户管理</h1>

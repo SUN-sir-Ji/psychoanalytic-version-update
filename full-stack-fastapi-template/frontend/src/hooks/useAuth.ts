@@ -47,8 +47,14 @@ const useAuth = () => {
 
   const loginMutation = useMutation({
     mutationFn: login,
-    onSuccess: () => {
-      navigate({ to: "/" })
+    onSuccess: async () => {
+      // 登录成功后获取用户信息，根据角色重定向
+      const user = await UsersService.readUserMe()
+      if (user.is_superuser) {
+        navigate({ to: "/admin" })
+      } else {
+        navigate({ to: "/user" })
+      }
     },
     onError: handleError.bind(showErrorToast),
   })

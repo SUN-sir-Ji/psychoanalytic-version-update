@@ -46,6 +46,8 @@ export function User({ user }: { user: any }) {
 
   if (!user) return null
 
+  const settingsPath = user?.is_superuser ? "/admin-settings" : "/user/settings"
+
   const handleMenuClick = () => {
     if (isMobile) {
       setOpenMobile(false)
@@ -79,7 +81,7 @@ export function User({ user }: { user: any }) {
               <UserInfo fullName={user?.full_name} email={user?.email} />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <RouterLink to="/settings" onClick={handleMenuClick}>
+            <RouterLink to={settingsPath} onClick={handleMenuClick}>
               <DropdownMenuItem>
                 <Settings />
                 用户设置

@@ -1,13 +1,4 @@
-import {
-  Brain,
-  History,
-  Home,
-  MessageSquare,
-  Mic,
-  TestTube2,
-  Upload,
-  Video,
-} from "lucide-react"
+import { Home, Brain, History, MessageSquare, Stethoscope } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
@@ -18,21 +9,20 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar"
 import useAuth from "@/hooks/useAuth"
+import { ConversationList } from "./ConversationList"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
 
-const userMenuItems: Item[] = [
+const userItems: Item[] = [
   { icon: Home, title: "首页", path: "/user" },
-  { icon: Brain, title: "心理状况分析", path: "/user/analysis" },
-  { icon: TestTube2, title: "在线心理测试", path: "/user/psychological-test" },
-  { icon: Mic, title: "在线音频录制", path: "/user/audio-recording" },
-  { icon: Video, title: "在线视频录制", path: "/user/video-recording" },
-  { icon: Upload, title: "文件上传分析", path: "/user/file-upload" },
-  { icon: History, title: "历史分析记录", path: "/user/history" },
-  { icon: MessageSquare, title: "心理医生咨询", path: "/user/counselor-chat" },
+  { icon: Stethoscope, title: "智能心理医生", path: "/user/ai-doctor" },
+  { icon: Brain, title: "心理测评", path: "/user/test" },
+  { icon: History, title: "测评记录", path: "/user/history" },
+  { icon: MessageSquare, title: "咨询记录", path: "/user/consultations" },
 ]
 
-function UserSidebar() {
+export function UserSidebar() {
+  const items = userItems
   const { user: currentUser } = useAuth()
 
   return (
@@ -41,7 +31,8 @@ function UserSidebar() {
         <Logo variant="responsive" />
       </SidebarHeader>
       <SidebarContent>
-        <Main items={userMenuItems} />
+        <Main items={items} />
+        <ConversationList />
       </SidebarContent>
       <SidebarFooter>
         <SidebarAppearance />

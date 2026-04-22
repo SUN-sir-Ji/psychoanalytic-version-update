@@ -8,16 +8,16 @@ import useAuth from "@/hooks/useAuth"
 
 const tabsConfig = [
   { value: "my-profile", title: "个人信息", component: UserInformation },
-  { value: "password", title: "密码", component: ChangePassword },
-  { value: "danger-zone", title: "危险区域", component: DeleteAccount },
+  { value: "password", title: "修改密码", component: ChangePassword },
+  { value: "danger-zone", title: "危险操作", component: DeleteAccount },
 ]
 
-export const Route = createFileRoute("/_layout/settings")({
+export const Route = createFileRoute("/user/settings")({
   component: UserSettings,
   head: () => ({
     meta: [
       {
-        title: "设置 - 心理测评系统",
+        title: "用户设置",
       },
     ],
   }),
@@ -25,32 +25,27 @@ export const Route = createFileRoute("/_layout/settings")({
 
 function UserSettings() {
   const { user: currentUser } = useAuth()
-  const finalTabs = currentUser?.is_superuser
-    ? tabsConfig.slice(0, 3)
-    : tabsConfig
 
   if (!currentUser) {
     return null
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto max-w-7xl flex flex-col gap-6 p-6 md:p-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">用户设置</h1>
-        <p className="text-muted-foreground">
-          管理您的账户设置和偏好
-        </p>
+        <p className="text-muted-foreground">管理您的账户信息与偏好设置</p>
       </div>
 
       <Tabs defaultValue="my-profile">
         <TabsList>
-          {finalTabs.map((tab) => (
+          {tabsConfig.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.title}
             </TabsTrigger>
           ))}
         </TabsList>
-        {finalTabs.map((tab) => (
+        {tabsConfig.map((tab) => (
           <TabsContent key={tab.value} value={tab.value}>
             <tab.component />
           </TabsContent>

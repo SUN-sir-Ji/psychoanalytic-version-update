@@ -13,15 +13,10 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as UserLayoutRouteImport } from './routes/_user-layout'
 import { Route as AdminLayoutRouteImport } from './routes/_admin-layout'
-import { Route as UserRouteRouteImport } from './routes/user/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as UserIndexRouteImport } from './routes/user/index'
-import { Route as UserSettingsRouteImport } from './routes/user/settings'
-import { Route as UserAiDoctorRouteImport } from './routes/user/ai-doctor'
-import { Route as AdminLayoutUserManageRouteImport } from './routes/_admin-layout/user-manage'
-import { Route as AdminLayoutChatHistoryRouteImport } from './routes/_admin-layout/chat-history'
-import { Route as AdminLayoutAdminSettingsRouteImport } from './routes/_admin-layout/admin-settings'
+import { Route as UserLayoutUserRouteImport } from './routes/_user-layout/user'
 import { Route as AdminLayoutAdminRouteImport } from './routes/_admin-layout/admin'
 
 const SignupRoute = SignupRouteImport.update({
@@ -44,13 +39,12 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminLayoutRoute = AdminLayoutRouteImport.update({
-  id: '/_admin-layout',
+const UserLayoutRoute = UserLayoutRouteImport.update({
+  id: '/_user-layout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UserRouteRoute = UserRouteRouteImport.update({
-  id: '/user',
-  path: '/user',
+const AdminLayoutRoute = AdminLayoutRouteImport.update({
+  id: '/_admin-layout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -58,37 +52,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UserIndexRoute = UserIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => UserRouteRoute,
+const UserLayoutUserRoute = UserLayoutUserRouteImport.update({
+  id: '/user',
+  path: '/user',
+  getParentRoute: () => UserLayoutRoute,
 } as any)
-const UserSettingsRoute = UserSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => UserRouteRoute,
-} as any)
-const UserAiDoctorRoute = UserAiDoctorRouteImport.update({
-  id: '/ai-doctor',
-  path: '/ai-doctor',
-  getParentRoute: () => UserRouteRoute,
-} as any)
-const AdminLayoutUserManageRoute = AdminLayoutUserManageRouteImport.update({
-  id: '/user-manage',
-  path: '/user-manage',
-  getParentRoute: () => AdminLayoutRoute,
-} as any)
-const AdminLayoutChatHistoryRoute = AdminLayoutChatHistoryRouteImport.update({
-  id: '/chat-history',
-  path: '/chat-history',
-  getParentRoute: () => AdminLayoutRoute,
-} as any)
-const AdminLayoutAdminSettingsRoute =
-  AdminLayoutAdminSettingsRouteImport.update({
-    id: '/admin-settings',
-    path: '/admin-settings',
-    getParentRoute: () => AdminLayoutRoute,
-  } as any)
 const AdminLayoutAdminRoute = AdminLayoutAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -97,18 +65,12 @@ const AdminLayoutAdminRoute = AdminLayoutAdminRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/user': typeof UserRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AdminLayoutAdminRoute
-  '/admin-settings': typeof AdminLayoutAdminSettingsRoute
-  '/chat-history': typeof AdminLayoutChatHistoryRoute
-  '/user-manage': typeof AdminLayoutUserManageRoute
-  '/user/ai-doctor': typeof UserAiDoctorRoute
-  '/user/settings': typeof UserSettingsRoute
-  '/user/': typeof UserIndexRoute
+  '/user': typeof UserLayoutUserRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -117,46 +79,30 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AdminLayoutAdminRoute
-  '/admin-settings': typeof AdminLayoutAdminSettingsRoute
-  '/chat-history': typeof AdminLayoutChatHistoryRoute
-  '/user-manage': typeof AdminLayoutUserManageRoute
-  '/user/ai-doctor': typeof UserAiDoctorRoute
-  '/user/settings': typeof UserSettingsRoute
-  '/user': typeof UserIndexRoute
+  '/user': typeof UserLayoutUserRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/user': typeof UserRouteRouteWithChildren
   '/_admin-layout': typeof AdminLayoutRouteWithChildren
+  '/_user-layout': typeof UserLayoutRouteWithChildren
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_admin-layout/admin': typeof AdminLayoutAdminRoute
-  '/_admin-layout/admin-settings': typeof AdminLayoutAdminSettingsRoute
-  '/_admin-layout/chat-history': typeof AdminLayoutChatHistoryRoute
-  '/_admin-layout/user-manage': typeof AdminLayoutUserManageRoute
-  '/user/ai-doctor': typeof UserAiDoctorRoute
-  '/user/settings': typeof UserSettingsRoute
-  '/user/': typeof UserIndexRoute
+  '/_user-layout/user': typeof UserLayoutUserRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/user'
     | '/login'
     | '/recover-password'
     | '/reset-password'
     | '/signup'
     | '/admin'
-    | '/admin-settings'
-    | '/chat-history'
-    | '/user-manage'
-    | '/user/ai-doctor'
-    | '/user/settings'
-    | '/user/'
+    | '/user'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -165,34 +111,24 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
-    | '/admin-settings'
-    | '/chat-history'
-    | '/user-manage'
-    | '/user/ai-doctor'
-    | '/user/settings'
     | '/user'
   id:
     | '__root__'
     | '/'
-    | '/user'
     | '/_admin-layout'
+    | '/_user-layout'
     | '/login'
     | '/recover-password'
     | '/reset-password'
     | '/signup'
     | '/_admin-layout/admin'
-    | '/_admin-layout/admin-settings'
-    | '/_admin-layout/chat-history'
-    | '/_admin-layout/user-manage'
-    | '/user/ai-doctor'
-    | '/user/settings'
-    | '/user/'
+    | '/_user-layout/user'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  UserRouteRoute: typeof UserRouteRouteWithChildren
   AdminLayoutRoute: typeof AdminLayoutRouteWithChildren
+  UserLayoutRoute: typeof UserLayoutRouteWithChildren
   LoginRoute: typeof LoginRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -229,18 +165,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_user-layout': {
+      id: '/_user-layout'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof UserLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_admin-layout': {
       id: '/_admin-layout'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AdminLayoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/user': {
-      id: '/user'
-      path: '/user'
-      fullPath: '/user'
-      preLoaderRoute: typeof UserRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -250,47 +186,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/user/': {
-      id: '/user/'
-      path: '/'
-      fullPath: '/user/'
-      preLoaderRoute: typeof UserIndexRouteImport
-      parentRoute: typeof UserRouteRoute
-    }
-    '/user/settings': {
-      id: '/user/settings'
-      path: '/settings'
-      fullPath: '/user/settings'
-      preLoaderRoute: typeof UserSettingsRouteImport
-      parentRoute: typeof UserRouteRoute
-    }
-    '/user/ai-doctor': {
-      id: '/user/ai-doctor'
-      path: '/ai-doctor'
-      fullPath: '/user/ai-doctor'
-      preLoaderRoute: typeof UserAiDoctorRouteImport
-      parentRoute: typeof UserRouteRoute
-    }
-    '/_admin-layout/user-manage': {
-      id: '/_admin-layout/user-manage'
-      path: '/user-manage'
-      fullPath: '/user-manage'
-      preLoaderRoute: typeof AdminLayoutUserManageRouteImport
-      parentRoute: typeof AdminLayoutRoute
-    }
-    '/_admin-layout/chat-history': {
-      id: '/_admin-layout/chat-history'
-      path: '/chat-history'
-      fullPath: '/chat-history'
-      preLoaderRoute: typeof AdminLayoutChatHistoryRouteImport
-      parentRoute: typeof AdminLayoutRoute
-    }
-    '/_admin-layout/admin-settings': {
-      id: '/_admin-layout/admin-settings'
-      path: '/admin-settings'
-      fullPath: '/admin-settings'
-      preLoaderRoute: typeof AdminLayoutAdminSettingsRouteImport
-      parentRoute: typeof AdminLayoutRoute
+    '/_user-layout/user': {
+      id: '/_user-layout/user'
+      path: '/user'
+      fullPath: '/user'
+      preLoaderRoute: typeof UserLayoutUserRouteImport
+      parentRoute: typeof UserLayoutRoute
     }
     '/_admin-layout/admin': {
       id: '/_admin-layout/admin'
@@ -302,44 +203,34 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface UserRouteRouteChildren {
-  UserAiDoctorRoute: typeof UserAiDoctorRoute
-  UserSettingsRoute: typeof UserSettingsRoute
-  UserIndexRoute: typeof UserIndexRoute
-}
-
-const UserRouteRouteChildren: UserRouteRouteChildren = {
-  UserAiDoctorRoute: UserAiDoctorRoute,
-  UserSettingsRoute: UserSettingsRoute,
-  UserIndexRoute: UserIndexRoute,
-}
-
-const UserRouteRouteWithChildren = UserRouteRoute._addFileChildren(
-  UserRouteRouteChildren,
-)
-
 interface AdminLayoutRouteChildren {
   AdminLayoutAdminRoute: typeof AdminLayoutAdminRoute
-  AdminLayoutAdminSettingsRoute: typeof AdminLayoutAdminSettingsRoute
-  AdminLayoutChatHistoryRoute: typeof AdminLayoutChatHistoryRoute
-  AdminLayoutUserManageRoute: typeof AdminLayoutUserManageRoute
 }
 
 const AdminLayoutRouteChildren: AdminLayoutRouteChildren = {
   AdminLayoutAdminRoute: AdminLayoutAdminRoute,
-  AdminLayoutAdminSettingsRoute: AdminLayoutAdminSettingsRoute,
-  AdminLayoutChatHistoryRoute: AdminLayoutChatHistoryRoute,
-  AdminLayoutUserManageRoute: AdminLayoutUserManageRoute,
 }
 
 const AdminLayoutRouteWithChildren = AdminLayoutRoute._addFileChildren(
   AdminLayoutRouteChildren,
 )
 
+interface UserLayoutRouteChildren {
+  UserLayoutUserRoute: typeof UserLayoutUserRoute
+}
+
+const UserLayoutRouteChildren: UserLayoutRouteChildren = {
+  UserLayoutUserRoute: UserLayoutUserRoute,
+}
+
+const UserLayoutRouteWithChildren = UserLayoutRoute._addFileChildren(
+  UserLayoutRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  UserRouteRoute: UserRouteRouteWithChildren,
   AdminLayoutRoute: AdminLayoutRouteWithChildren,
+  UserLayoutRoute: UserLayoutRouteWithChildren,
   LoginRoute: LoginRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
