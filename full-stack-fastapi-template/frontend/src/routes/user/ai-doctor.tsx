@@ -7,6 +7,7 @@ import {
   type DifyMessage,
   type DifyMessageFile,
   uploadFile,
+  DIFY_AI_DOCTOR_API_KEY,
 } from "@/services/difyApi"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -61,7 +62,7 @@ function AiDoctor() {
   const loadMessages = useCallback(
     async (convId: string) => {
       try {
-        const result = await getMessages(userId, convId)
+        const result = await getMessages(userId, convId, { apiKey: DIFY_AI_DOCTOR_API_KEY })
         const chatMsgs: ChatMessage[] = []
         // messages 返回是倒序，需要正过来，并且分 user 和 assistant
         const sorted = [...result.data].sort((a, b) => a.created_at - b.created_at)
@@ -116,7 +117,7 @@ function AiDoctor() {
     const uploadedFiles: { type: string; transfer_method: string; url: string; upload_file_id?: string }[] = []
     for (const file of filesToSend) {
       try {
-        const result = await uploadFile(file, userId)
+        const result = await uploadFile(file, userId, DIFY_AI_DOCTOR_API_KEY)
         uploadedFiles.push({
           type: file.type.startsWith("audio")
             ? "audio"
@@ -206,6 +207,7 @@ function AiDoctor() {
         {
           conversationId: activeConvId || undefined,
           files: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          apiKey: DIFY_AI_DOCTOR_API_KEY,
         }
       )
     } catch (err) {

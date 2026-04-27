@@ -17,8 +17,10 @@ import { Route as AdminLayoutRouteImport } from './routes/_admin-layout'
 import { Route as UserRouteRouteImport } from './routes/user/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UserIndexRouteImport } from './routes/user/index'
+import { Route as UserTestRouteImport } from './routes/user/test'
 import { Route as UserSettingsRouteImport } from './routes/user/settings'
 import { Route as UserAiDoctorRouteImport } from './routes/user/ai-doctor'
+import { Route as LayoutPsychologicalTestRouteImport } from './routes/_layout/psychological-test'
 import { Route as AdminLayoutUserManageRouteImport } from './routes/_admin-layout/user-manage'
 import { Route as AdminLayoutChatHistoryRouteImport } from './routes/_admin-layout/chat-history'
 import { Route as AdminLayoutAdminSettingsRouteImport } from './routes/_admin-layout/admin-settings'
@@ -63,6 +65,11 @@ const UserIndexRoute = UserIndexRouteImport.update({
   path: '/',
   getParentRoute: () => UserRouteRoute,
 } as any)
+const UserTestRoute = UserTestRouteImport.update({
+  id: '/test',
+  path: '/test',
+  getParentRoute: () => UserRouteRoute,
+} as any)
 const UserSettingsRoute = UserSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -72,6 +79,11 @@ const UserAiDoctorRoute = UserAiDoctorRouteImport.update({
   id: '/ai-doctor',
   path: '/ai-doctor',
   getParentRoute: () => UserRouteRoute,
+} as any)
+const LayoutPsychologicalTestRoute = LayoutPsychologicalTestRouteImport.update({
+  id: '/_layout/psychological-test',
+  path: '/psychological-test',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLayoutUserManageRoute = AdminLayoutUserManageRouteImport.update({
   id: '/user-manage',
@@ -106,8 +118,10 @@ export interface FileRoutesByFullPath {
   '/admin-settings': typeof AdminLayoutAdminSettingsRoute
   '/chat-history': typeof AdminLayoutChatHistoryRoute
   '/user-manage': typeof AdminLayoutUserManageRoute
+  '/psychological-test': typeof LayoutPsychologicalTestRoute
   '/user/ai-doctor': typeof UserAiDoctorRoute
   '/user/settings': typeof UserSettingsRoute
+  '/user/test': typeof UserTestRoute
   '/user/': typeof UserIndexRoute
 }
 export interface FileRoutesByTo {
@@ -120,8 +134,10 @@ export interface FileRoutesByTo {
   '/admin-settings': typeof AdminLayoutAdminSettingsRoute
   '/chat-history': typeof AdminLayoutChatHistoryRoute
   '/user-manage': typeof AdminLayoutUserManageRoute
+  '/psychological-test': typeof LayoutPsychologicalTestRoute
   '/user/ai-doctor': typeof UserAiDoctorRoute
   '/user/settings': typeof UserSettingsRoute
+  '/user/test': typeof UserTestRoute
   '/user': typeof UserIndexRoute
 }
 export interface FileRoutesById {
@@ -137,8 +153,10 @@ export interface FileRoutesById {
   '/_admin-layout/admin-settings': typeof AdminLayoutAdminSettingsRoute
   '/_admin-layout/chat-history': typeof AdminLayoutChatHistoryRoute
   '/_admin-layout/user-manage': typeof AdminLayoutUserManageRoute
+  '/_layout/psychological-test': typeof LayoutPsychologicalTestRoute
   '/user/ai-doctor': typeof UserAiDoctorRoute
   '/user/settings': typeof UserSettingsRoute
+  '/user/test': typeof UserTestRoute
   '/user/': typeof UserIndexRoute
 }
 export interface FileRouteTypes {
@@ -154,8 +172,10 @@ export interface FileRouteTypes {
     | '/admin-settings'
     | '/chat-history'
     | '/user-manage'
+    | '/psychological-test'
     | '/user/ai-doctor'
     | '/user/settings'
+    | '/user/test'
     | '/user/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -168,8 +188,10 @@ export interface FileRouteTypes {
     | '/admin-settings'
     | '/chat-history'
     | '/user-manage'
+    | '/psychological-test'
     | '/user/ai-doctor'
     | '/user/settings'
+    | '/user/test'
     | '/user'
   id:
     | '__root__'
@@ -184,8 +206,10 @@ export interface FileRouteTypes {
     | '/_admin-layout/admin-settings'
     | '/_admin-layout/chat-history'
     | '/_admin-layout/user-manage'
+    | '/_layout/psychological-test'
     | '/user/ai-doctor'
     | '/user/settings'
+    | '/user/test'
     | '/user/'
   fileRoutesById: FileRoutesById
 }
@@ -197,6 +221,7 @@ export interface RootRouteChildren {
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  LayoutPsychologicalTestRoute: typeof LayoutPsychologicalTestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -257,6 +282,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserIndexRouteImport
       parentRoute: typeof UserRouteRoute
     }
+    '/user/test': {
+      id: '/user/test'
+      path: '/test'
+      fullPath: '/user/test'
+      preLoaderRoute: typeof UserTestRouteImport
+      parentRoute: typeof UserRouteRoute
+    }
     '/user/settings': {
       id: '/user/settings'
       path: '/settings'
@@ -270,6 +302,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/user/ai-doctor'
       preLoaderRoute: typeof UserAiDoctorRouteImport
       parentRoute: typeof UserRouteRoute
+    }
+    '/_layout/psychological-test': {
+      id: '/_layout/psychological-test'
+      path: '/psychological-test'
+      fullPath: '/psychological-test'
+      preLoaderRoute: typeof LayoutPsychologicalTestRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_admin-layout/user-manage': {
       id: '/_admin-layout/user-manage'
@@ -305,12 +344,14 @@ declare module '@tanstack/react-router' {
 interface UserRouteRouteChildren {
   UserAiDoctorRoute: typeof UserAiDoctorRoute
   UserSettingsRoute: typeof UserSettingsRoute
+  UserTestRoute: typeof UserTestRoute
   UserIndexRoute: typeof UserIndexRoute
 }
 
 const UserRouteRouteChildren: UserRouteRouteChildren = {
   UserAiDoctorRoute: UserAiDoctorRoute,
   UserSettingsRoute: UserSettingsRoute,
+  UserTestRoute: UserTestRoute,
   UserIndexRoute: UserIndexRoute,
 }
 
@@ -344,6 +385,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecoverPasswordRoute: RecoverPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  LayoutPsychologicalTestRoute: LayoutPsychologicalTestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

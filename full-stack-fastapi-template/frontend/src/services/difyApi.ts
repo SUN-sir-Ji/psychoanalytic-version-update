@@ -1,5 +1,13 @@
 const DIFY_BASE_URL = import.meta.env.VITE_DIFY_API_URL || "http://localhost/v1"
-const DIFY_API_KEY = import.meta.env.VITE_DIFY_API_KEY || ""
+
+// 各工作流专用 API Key（从环境变量读取）
+const DIFY_AI_DOCTOR_API_KEY = import.meta.env.VITE_DIFY_AI_DOCTOR_API_KEY || ""
+const DIFY_TEST_API_KEY = import.meta.env.VITE_DIFY_TEST_API_KEY || ""
+
+/** 兼容旧代码的默认 Key（指向智能心理医生） */
+const DIFY_API_KEY = DIFY_AI_DOCTOR_API_KEY
+
+export { DIFY_AI_DOCTOR_API_KEY, DIFY_TEST_API_KEY, DIFY_API_KEY }
 
 export interface DifyMessage {
   id: string
@@ -58,8 +66,10 @@ export async function sendMessageStream(
   options?: {
     conversationId?: string
     files?: { type: string; transfer_method: string; url: string; upload_file_id?: string }[]
+    apiKey?: string
   }
 ): Promise<void> {
+  const key = options?.apiKey || DIFY_API_KEY
   const body: Record<string, unknown> = {
     inputs: {},
     query,
@@ -79,7 +89,7 @@ export async function sendMessageStream(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${DIFY_API_KEY}`,
+        Authorization: `Bearer ${key}`,
       },
       body: JSON.stringify(body),
     })
@@ -160,8 +170,10 @@ export async function sendMessageStream(
 
 export async function uploadFile(
   file: File,
-  user: string
+  user: string,
+  apiKey?: string
 ): Promise<DifyUploadResult> {
+  const key = apiKey || DIFY_API_KEY
   const formData = new FormData()
   formData.append("file", file)
   formData.append("user", user)
@@ -169,7 +181,7 @@ export async function uploadFile(
   const response = await fetch(`${DIFY_BASE_URL}/files/upload`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${DIFY_API_KEY}`,
+      Authorization: `Bearer ${key}`,
     },
     body: formData,
   })
@@ -184,8 +196,9 @@ export async function uploadFile(
 
 export async function getConversations(
   user: string,
-  options?: { lastId?: string; limit?: number }
+  options?: { lastId?: string; limit?: number; apiKey?: string }
 ): Promise<{ data: DifyConversation[]; has_more: boolean }> {
+  const key = options?.apiKey || DIFY_API_KEY
   const params = new URLSearchParams()
   params.set("user", user)
   params.set("limit", String(options?.limit || 20))
@@ -195,7 +208,7 @@ export async function getConversations(
 
   const response = await fetch(`${DIFY_BASE_URL}/conversations?${params}`, {
     headers: {
-      Authorization: `Bearer ${DIFY_API_KEY}`,
+      Authorization: `Bearer ${key}`,
     },
   })
 
@@ -209,8 +222,9 @@ export async function getConversations(
 export async function getMessages(
   user: string,
   conversationId: string,
-  options?: { firstId?: string; limit?: number }
+  options?: { firstId?: string; limit?: number; apiKey?: string }
 ): Promise<{ data: DifyMessage[]; has_more: boolean }> {
+  const key = options?.apiKey || DIFY_API_KEY
   const params = new URLSearchParams()
   params.set("user", user)
   params.set("conversation_id", conversationId)
@@ -221,7 +235,7 @@ export async function getMessages(
 
   const response = await fetch(`${DIFY_BASE_URL}/messages?${params}`, {
     headers: {
-      Authorization: `Bearer ${DIFY_API_KEY}`,
+      Authorization: `Bearer ${key}`,
     },
   })
 
@@ -232,12 +246,17 @@ export async function getMessages(
   return response.json()
 }
 
-export async function deleteConversation(conversationId: string, user: string): Promise<void> {
+export async function deleteConversation(
+  conversationId: string,
+  user: string,
+  apiKey?: string
+): Promise<void> {
+  const key = apiKey || DIFY_API_KEY
   const response = await fetch(`${DIFY_BASE_URL}/conversations/${conversationId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${DIFY_API_KEY}`,
+      Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({ user }),
   })
