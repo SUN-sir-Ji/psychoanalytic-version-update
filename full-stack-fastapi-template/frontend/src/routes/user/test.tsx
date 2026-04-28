@@ -494,36 +494,52 @@ function PsychologicalTest() {
         <div className="h-full overflow-y-auto px-4 py-4">
           {messages.length === 0 && !activeTest ? (
             /* 欢迎界面 */
-            <div className="flex h-full flex-col items-center justify-center gap-6">
-              <div className="flex size-16 items-center justify-center rounded-full bg-violet-100">
-                <BarChart3 className="size-8 text-violet-600" />
+            <div className="flex h-full flex-col items-center justify-center gap-8 px-6">
+              {/* 头像 */}
+              <div className="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 to-purple-100 shadow-sm">
+                <span className="text-3xl">🧠</span>
               </div>
-              <div className="max-w-sm text-center">
-                <h2 className="mb-2 text-lg font-semibold">心理测评助手</h2>
+
+              {/* 问候语 */}
+              <div className="max-w-md text-center space-y-3">
+                <h2 className="text-xl font-semibold">
+                  你好呀！👋✨
+                </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  您好！我可以为您提供专业的心理测评服务。请告诉我您想进行什么类型的测评，或者直接描述您目前的心理状态。
+                  很高兴见到你！我是<strong className="text-violet-600">小心</strong>，你的心理测试小助手～<br />
+                  这里是一个温暖的角落，可以帮助你更好地了解自己的内心世界。
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
+
+              {/* 三个功能卡片 */}
+              <div className="w-full max-w-md space-y-3">
                 {[
-                  { label: "焦虑自评量表", hint: "我想做焦虑自评测试" },
-                  { label: "抑郁自评量表", hint: "我想做抑郁自评测试" },
-                  { label: "成人依恋量表", hint: "我想做成人依恋量表测评" },
-                  { label: "自定义测评", hint: "请根据我的情况推荐合适的测评" },
+                  {
+                    emoji: "🌟",
+                    title: "聊聊心事",
+                    desc: "如果你最近有什么烦心事或者想倾诉的，我可以陪你说说话",
+                  },
+                  {
+                    emoji: "📋",
+                    title: "做个心理小测试",
+                    desc: "想探索一下自己的某个心理维度吗？比如情绪、压力、睡眠、人际关系等",
+                  },
+                  {
+                    emoji: "🎯",
+                    title: "了解测试怎么做",
+                    desc: "如果你想了解如何使用测试功能，我可以一步步告诉你哦",
+                  },
                 ].map((item) => (
-                  <Card
-                    key={item.label}
-                    className="cursor-pointer p-3 transition-all hover:bg-violet-50 hover:border-violet-200 active:scale-95"
-                    onClick={() => {
-                      setInputText(item.hint)
-                      inputRef.current?.focus()
-                    }}
+                  <div
+                    key={item.title}
+                    className="flex items-start gap-3 rounded-xl border border-violet-100 bg-white/80 p-4 shadow-sm transition-all hover:bg-violet-50/60 hover:border-violet-200 hover:shadow-md cursor-default"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium">{item.label}</span>
-                      <ChevronRight className="size-3 text-muted-foreground" />
+                    <span className="text-2xl flex-shrink-0 mt-0.5">{item.emoji}</span>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-violet-700">{item.title}</div>
+                      <div className="text-xs text-muted-foreground leading-relaxed mt-0.5">{item.desc}</div>
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             </div>
@@ -712,7 +728,7 @@ function PsychologicalTest() {
               </div>
 
               {/* 提交区 */}
-              <div className="sticky bottom-4 flex items-center justify-between rounded-xl border bg-background/95 backdrop-blur-sm px-4 py-3 shadow-md">
+              <div className="sticky bottom-4 flex items-center justify-between rounded-xl border bg-background/95 backdrop-blur-sm px-4 py-2 shadow-md">
                 <span className="text-xs text-muted-foreground">
                   {allAnswered ? (
                     <span className="text-green-600 font-medium flex items-center gap-1">
@@ -771,9 +787,6 @@ function PsychologicalTest() {
                   <Send className="size-4" />
                 )}
               </Button>
-            </div>
-            <div className="mt-2 text-center text-xs text-muted-foreground">
-              Enter 发送 / Shift+Enter 换行
             </div>
           </div>
         </div>

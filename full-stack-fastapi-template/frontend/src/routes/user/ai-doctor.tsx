@@ -9,6 +9,7 @@ import {
   uploadFile,
   DIFY_AI_DOCTOR_API_KEY,
 } from "@/services/difyApi"
+import { createAnalysisReport } from "@/services/analysisApi"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
@@ -22,10 +23,10 @@ import {
   FileText,
   Video,
   Mic,
-  Upload,
-  FlaskConical,
 } from "lucide-react"
 import { useConversation } from "@/components/contexts/ConversationContext"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 export const Route = createFileRoute("/user/ai-doctor")({
   component: AiDoctor,
@@ -57,6 +58,10 @@ function AiDoctor() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const analysisFileRef = useRef<HTMLInputElement>(null)
+  const [showAnalysisUpload, setShowAnalysisUpload] = useState(false)
+  const [analysisFile, setAnalysisFile] = useState<File | null>(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
 
   // 加载某个会话的消息
   const loadMessages = useCallback(
@@ -64,7 +69,6 @@ function AiDoctor() {
       try {
         const result = await getMessages(userId, convId, { apiKey: DIFY_AI_DOCTOR_API_KEY })
         const chatMsgs: ChatMessage[] = []
-        // messages 返回是倒序，需要正过来，并且分 user 和 assistant
         const sorted = [...result.data].sort((a, b) => a.created_at - b.created_at)
         for (const msg of sorted) {
           if (msg.query) {
@@ -109,11 +113,9 @@ function AiDoctor() {
     setStreamingContent("")
     setIsStreaming(true)
 
-    // 添加 streaming 占位消息
     const assistantMsg: ChatMessage = { role: "assistant", content: "", isStreaming: true }
     setMessages((prev) => [...prev, assistantMsg])
 
-    // 上传文件
     const uploadedFiles: { type: string; transfer_method: string; url: string; upload_file_id?: string }[] = []
     for (const file of filesToSend) {
       try {
@@ -131,12 +133,11 @@ function AiDoctor() {
           upload_file_id: result.id,
         })
       } catch {
-        // skip failed uploads
+        // skip
       }
     }
     setAttachedFiles([])
 
-    // 临时变量来拼接流式内容
     let accumulated = ""
     let streamHandledEnd = false
 
@@ -173,7 +174,6 @@ function AiDoctor() {
             loadConversations()
           },
           onWorkflowStarted() {
-            // 工作流开始时可以显示 loading
             setMessages((prev) => {
               const newMsgs = [...prev]
               const last = newMsgs[newMsgs.length - 1]
@@ -240,7 +240,7 @@ function AiDoctor() {
   // 文件选择
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
-    if (files) {
+    if (files && files.length > 0) {
       setAttachedFiles((prev) => [...prev, ...Array.from(files)])
     }
     if (fileInputRef.current) {
@@ -258,49 +258,6 @@ function AiDoctor() {
     if (file.type.startsWith("audio")) return <Mic className="size-4 text-purple-400" />
     if (file.type.startsWith("video")) return <Video className="size-4 text-blue-400" />
     return <FileText className="size-4 text-green-400" />
-  }
-
-  // 文件分析栏状态
-  const [analysisFiles, setAnalysisFiles] = useState<File[]>([])
-
-  // 统计各类型已选文件数
-  const textFileCount = analysisFiles.filter(f =>
-    !f.type.startsWith("audio/") && !f.type.startsWith("video/")
-  ).length
-  const audioFileCount = analysisFiles.filter(f => f.type.startsWith("audio/")).length
-  const videoFileCount = analysisFiles.filter(f => f.type.startsWith("video/")).length
-
-  // 文件分析栏：点击卡片 → 动态创建 input 弹出文件选择器
-  const handleAnalysisFileSelect = (type: "text" | "audio" | "video") => {
-    const acceptMap = {
-      text: ".txt,.md,.pdf,.doc,.docx",
-      audio: "audio/*",
-      video: "video/*",
-    }
-    const input = document.createElement("input")
-    input.type = "file"
-    input.accept = acceptMap[type]
-    input.multiple = true
-    input.onchange = (e) => {
-      const target = e.target as HTMLInputElement
-      if (target.files && target.files.length > 0) {
-        setAnalysisFiles((prev) => [...prev, ...Array.from(target.files!)])
-      }
-    }
-    input.click()
-  }
-
-  // 文件分析栏：移除已选文件
-  const removeAnalysisFile = (index: number) => {
-    setAnalysisFiles((prev) => prev.filter((_, i) => i !== index))
-  }
-
-  // 文件分析栏：点击「开始分析」→ 直接发送文件
-  const handleStartAnalysis = () => {
-    if (analysisFiles.length === 0 || isStreaming) return
-    const files = [...analysisFiles]
-    setAnalysisFiles([])
-    handleSend(files)
   }
 
   // 开场白
@@ -334,36 +291,6 @@ function AiDoctor() {
                 <h2 className="mb-2 text-lg font-semibold">多模态心理状况分析</h2>
                 <p className="text-sm text-muted-foreground">{openingStatement}</p>
               </div>
-              <div className="grid grid-cols-3 gap-3">
-                <Card
-                  className="cursor-pointer p-3 text-center transition-colors hover:bg-accent"
-                  onClick={() => {
-                    setInputText("我最近压力很大，总是睡不好觉，感觉对什么都没兴趣")
-                    inputRef.current?.focus()
-                  }}
-                >
-                  <FileText className="mx-auto mb-1.5 size-5 text-blue-500" />
-                  <span className="text-xs">文本分析</span>
-                </Card>
-                <Card
-                  className="cursor-pointer p-3 text-center transition-colors hover:bg-accent"
-                  onClick={() => {
-                    fileInputRef.current?.click()
-                  }}
-                >
-                  <Mic className="mx-auto mb-1.5 size-5 text-purple-500" />
-                  <span className="text-xs">音频分析</span>
-                </Card>
-                <Card
-                  className="cursor-pointer p-3 text-center transition-colors hover:bg-accent"
-                  onClick={() => {
-                    fileInputRef.current?.click()
-                  }}
-                >
-                  <Video className="mx-auto mb-1.5 size-5 text-green-500" />
-                  <span className="text-xs">视频分析</span>
-                </Card>
-              </div>
             </div>
           ) : (
             <div className="mx-auto max-w-3xl space-y-4">
@@ -376,18 +303,14 @@ function AiDoctor() {
                       </AvatarFallback>
                     </Avatar>
                   )}
-                  <div className={`max-w-[80%] space-y-1`}>
+                  <div className="max-w-[80%] space-y-1">
                     {/* 消息文件 */}
                     {msg.files && msg.files.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {msg.files.map((f) => (
                           <div key={f.id} className="text-xs text-muted-foreground">
                             {f.type === "image" ? (
-                              <img
-                                src={f.url}
-                                alt="附件"
-                                className="max-h-48 rounded-md"
-                              />
+                              <img src={f.url} alt="附件" className="max-h-48 rounded-md" />
                             ) : (
                               <span className="inline-flex items-center gap-1 rounded border px-2 py-1">
                                 <FileText className="size-3" />
@@ -399,14 +322,14 @@ function AiDoctor() {
                       </div>
                     )}
                     {/* 消息内容 */}
-                    <div
-                      className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                        msg.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      }`}
-                    >
-                      {msg.content || (msg.isStreaming ? "" : "...")}
+                    <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                      {msg.role === "assistant" ? (
+                        <div className="prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-li:my-0.5 prose-strong:text-foreground prose-headings:text-foreground">
+                          <ReactMarkdown>{msg.content || ""}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        msg.content || (msg.isStreaming ? "" : "...")
+                      )}
                       {msg.isStreaming && msg.content && (
                         <span className="ml-0.5 inline-block animate-pulse">|</span>
                       )}
@@ -439,212 +362,272 @@ function AiDoctor() {
           )}
         </div>
 
-        {/* 附件预览 */}
-        {attachedFiles.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto border-t px-4 py-2">
-            {attachedFiles.map((file, idx) => (
-              <div
-                key={`${file.name}-${idx}`}
-                className="flex flex-shrink-0 items-center gap-1.5 rounded-md border bg-muted px-2 py-1 text-xs"
-              >
-                {getFileIcon(file)}
-                <span className="max-w-24 truncate">{file.name}</span>
-                <button
-                  type="button"
-                  className="ml-1 rounded p-0.5 hover:bg-destructive/20"
-                  onClick={() => removeAttachment(idx)}
-                >
-                  <X className="size-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* 输入区域 */}
-        <div className="border-t p-4">
+        {/* 输入区域 - 豆包风格 */}
+        <div className="border-t bg-background p-4">
           <div className="mx-auto max-w-3xl">
-            <div className="flex items-end gap-2 rounded-xl border bg-background px-3 py-2">
-              {/* 文件上传按钮 */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                accept="audio/*,video/*,image/*,.pdf,.doc,.docx,.txt,.md"
-                multiple
-                onChange={handleFileSelect}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isStreaming}
-              >
-                <Paperclip className="size-4" />
-              </Button>
+            {/* 输入框容器 - 豆包风格 */}
+            <div className="rounded-2xl border border-border/60 bg-card shadow-sm transition-all hover:border-border">
+              {/* 附件预览区域 - 在输入框上方 */}
+              {attachedFiles.length > 0 && (
+                <div className="border-b border-border/60 px-4 py-3">
+                  <div className="flex flex-wrap gap-2">
+                    {attachedFiles.map((file, idx) => {
+                      const isImage = file.type.startsWith("image")
+                      const previewUrl = isImage ? URL.createObjectURL(file) : null
+                      return (
+                        <div key={`${file.name}-${idx}`} className={`group relative flex items-center gap-2 rounded-lg border border-border/60 bg-background px-3 py-2 text-xs transition-all hover:border-border ${isImage ? "pr-2" : "max-w-[200px]"}`}>
+                          {/* 文件图标或预览图 */}
+                          <div className="shrink-0">
+                            {isImage && previewUrl ? (
+                              <div className="size-10 overflow-hidden rounded-md">
+                                <img src={previewUrl} alt={file.name} className="size-full object-cover" onLoad={() => URL.revokeObjectURL(previewUrl)} />
+                              </div>
+                            ) : (
+                              <div className="flex size-8 items-center justify-center rounded-md bg-primary/10">
+                                {getFileIcon(file)}
+                              </div>
+                            )}
+                          </div>
 
-              {/* 文本输入 */}
-              <textarea
-                ref={inputRef}
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="输入消息，或上传音频/视频/文本进行分析..."
-                className="flex-1 resize-none border-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                rows={1}
-                disabled={isStreaming}
-                style={{ maxHeight: "120px", minHeight: "24px" }}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement
-                  target.style.height = "24px"
-                  target.style.height = `${Math.min(target.scrollHeight, 120)}px`
-                }}
-              />
+                          {/* 文件信息 */}
+                          {!isImage && (
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-sm font-medium text-foreground">{file.name}</div>
+                              <div className="truncate text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</div>
+                            </div>
+                          )}
 
-              {/* 发送按钮 */}
-              <Button
-                size="icon-sm"
-                onClick={() => handleSend()}
-                disabled={isStreaming || (!inputText.trim() && attachedFiles.length === 0)}
-              >
-                {isStreaming ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Send className="size-4" />
-                )}
-              </Button>
-            </div>
+                          {/* 删除按钮 */}
+                          <button type="button" className="absolute right-1 top-1 rounded-full bg-background/80 p-0.5 opacity-0 shadow-sm transition-opacity hover:bg-destructive/10 group-hover:opacity-100" onClick={() => { removeAttachment(idx); if (previewUrl) URL.revokeObjectURL(previewUrl) }}>
+                            <X className="size-3 text-muted-foreground hover:text-destructive" />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
 
-            <div className="mt-2 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-              <span>Enter 发送 / Shift+Enter 换行</span>
-              <span>支持音频、视频、图片、文档文件</span>
+              {/* 文本输入区域 - 上方 */}
+              <div className="px-4 py-3">
+                <textarea
+                  ref={inputRef}
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="输入消息，或上传文件进行分析..."
+                  className="w-full resize-none border-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  rows={1}
+                  disabled={isStreaming}
+                  style={{ maxHeight: "120px", minHeight: "24px" }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement
+                    target.style.height = "24px"
+                    target.style.height = `${Math.min(target.scrollHeight, 120)}px`
+                  }}
+                />
+              </div>
+
+              {/* 工具栏区域 - 下方 */}
+              <div className="flex items-center justify-between border-t border-border/60 px-4 py-2">
+                {/* 左侧：文件上传按钮 + 心理状况分析按钮 */}
+                <div className="flex items-center gap-2">
+                  <input ref={fileInputRef} type="file" className="hidden" accept="audio/*,video/*,image/*,.pdf,.doc,.docx,.txt,.md" multiple onChange={handleFileSelect} />
+                  <Button type="button" variant="ghost" size="icon-sm" className="rounded-lg hover:bg-primary/10" onClick={() => fileInputRef.current?.click()} disabled={isStreaming}>
+                    <Paperclip className="size-4 text-muted-foreground" />
+                  </Button>
+
+                  {/* 心理状况分析按钮 */}
+                  <Button type="button" variant="ghost" size="sm" className="rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-foreground" onClick={() => setShowAnalysisUpload(true)} disabled={isStreaming}>
+                    <Brain className="size-4 mr-1" />
+                    <span className="text-xs">心理状况分析</span>
+                  </Button>
+                </div>
+
+                {/* 右侧：发送按钮 */}
+                <Button size="icon-sm" className="rounded-lg bg-primary hover:bg-primary/90" onClick={() => handleSend()} disabled={isStreaming || (!inputText.trim() && attachedFiles.length === 0)}>
+                  {isStreaming ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 右侧文件分析栏 */}
-      <div className="flex w-64 flex-shrink-0 flex-col overflow-hidden rounded-lg border bg-card">
-        {/* 栏标题 */}
-        <div className="flex items-center gap-2 border-b px-4 py-3">
-          <div className="flex size-8 items-center justify-center rounded-full bg-primary/10">
-            <FlaskConical className="size-4 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold">文件分析</h2>
-            <p className="text-xs text-muted-foreground">上传文件进行心理分析</p>
-          </div>
-        </div>
+      {/* 心理状况分析 - 文件上传模态框 */}
+      {showAnalysisUpload && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* 背景遮罩 */}
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setShowAnalysisUpload(false); setAnalysisFile(null) }} />
 
-        {/* 上传卡片区域 */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="space-y-3">
-            {/* 文本分析卡片 */}
-            <Card
-              className={`cursor-pointer p-4 transition-colors ${textFileCount > 0 ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "hover:bg-accent"}`}
-              onClick={() => handleAnalysisFileSelect("text")}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`flex size-10 items-center justify-center rounded-lg ${textFileCount > 0 ? "bg-blue-200" : "bg-blue-100"}`}>
-                  <FileText className={`size-5 ${textFileCount > 0 ? "text-blue-600" : "text-blue-500"}`} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">文本分析</p>
-                  <p className="text-xs text-muted-foreground">.txt .md .pdf .doc</p>
-                </div>
-                {textFileCount > 0 && (
-                  <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                    {textFileCount}
-                  </span>
-                )}
-              </div>
-            </Card>
-
-            {/* 音频分析卡片 */}
-            <Card
-              className={`cursor-pointer p-4 transition-colors ${audioFileCount > 0 ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "hover:bg-accent"}`}
-              onClick={() => handleAnalysisFileSelect("audio")}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`flex size-10 items-center justify-center rounded-lg ${audioFileCount > 0 ? "bg-purple-200" : "bg-purple-100"}`}>
-                  <Mic className={`size-5 ${audioFileCount > 0 ? "text-purple-600" : "text-purple-500"}`} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">音频分析</p>
-                  <p className="text-xs text-muted-foreground">.mp3 .wav .m4a</p>
-                </div>
-                {audioFileCount > 0 && (
-                  <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                    {audioFileCount}
-                  </span>
-                )}
-              </div>
-            </Card>
-
-            {/* 视频分析卡片 */}
-            <Card
-              className={`cursor-pointer p-4 transition-colors ${videoFileCount > 0 ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "hover:bg-accent"}`}
-              onClick={() => handleAnalysisFileSelect("video")}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`flex size-10 items-center justify-center rounded-lg ${videoFileCount > 0 ? "bg-green-200" : "bg-green-100"}`}>
-                  <Video className={`size-5 ${videoFileCount > 0 ? "text-green-600" : "text-green-500"}`} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">视频分析</p>
-                  <p className="text-xs text-muted-foreground">.mp4 .mov .avi</p>
-                </div>
-                {videoFileCount > 0 && (
-                  <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                    {videoFileCount}
-                  </span>
-                )}
-              </div>
-            </Card>
-          </div>
-
-          {/* 已选文件列表 */}
-          {analysisFiles.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">已选文件</p>
-              {analysisFiles.map((file, idx) => (
-                <div
-                  key={`analysis-${file.name}-${idx}`}
-                  className="flex items-center gap-2 rounded-md border bg-muted px-2 py-1.5 text-xs"
-                >
-                  {getFileIcon(file)}
-                  <span className="flex-1 truncate">{file.name}</span>
-                  <button
-                    type="button"
-                    className="rounded p-0.5 hover:bg-destructive/20"
-                    onClick={() => removeAnalysisFile(idx)}
-                  >
-                    <X className="size-3" />
-                  </button>
-                </div>
-              ))}
+          {/* 模态框内容 */}
+          <div className="relative z-10 w-full max-w-md rounded-2xl bg-background p-6 shadow-2xl">
+            {/* 标题 */}
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">心理状况分析</h3>
+              <Button type="button" variant="ghost" size="icon-sm" onClick={() => { setShowAnalysisUpload(false); setAnalysisFile(null) }}>
+                <X className="size-4" />
+              </Button>
             </div>
-          )}
-        </div>
 
-        {/* 底部开始分析按钮 */}
-        <div className="border-t p-4">
-          <Button
-            className="w-full"
-            onClick={handleStartAnalysis}
-            disabled={analysisFiles.length === 0 || isStreaming}
-          >
-            {isStreaming ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
-            ) : (
-              <Upload className="mr-2 size-4" />
+            {/* 文件上传区域 */}
+            <div className="mb-4">
+              <input ref={analysisFileRef} type="file" className="hidden" accept=".pdf,.doc,.docx,.txt,.md,audio/*,video/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) setAnalysisFile(file) }} />
+
+              {!analysisFile ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground mb-3">选择要分析的档案类型：</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button type="button" onClick={() => { if (analysisFileRef.current) { analysisFileRef.current.accept = ".pdf,.doc,.docx,.txt,.md"; analysisFileRef.current.click() } }} className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/30 p-4 transition-all hover:border-primary hover:bg-primary/5">
+                      <FileText className="size-8 text-blue-500" />
+                      <span className="text-sm font-medium">文档</span>
+                    </button>
+
+                    <button type="button" onClick={() => { if (analysisFileRef.current) { analysisFileRef.current.accept = "audio/*"; analysisFileRef.current.click() } }} className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/30 p-4 transition-all hover:border-primary hover:bg-primary/5">
+                      <Mic className="size-8 text-purple-500" />
+                      <span className="text-sm font-medium">音频</span>
+                    </button>
+
+                    <button type="button" onClick={() => { if (analysisFileRef.current) { analysisFileRef.current.accept = "video/*"; analysisFileRef.current.click() } }} className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/30 p-4 transition-all hover:border-primary hover:bg-primary/5">
+                      <Video className="size-8 text-green-500" />
+                      <span className="text-sm font-medium">视频</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-lg border bg-muted/30 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                      {analysisFile.type.startsWith("audio") ? (
+                        <Mic className="size-5 text-purple-500" />
+                      ) : analysisFile.type.startsWith("video") ? (
+                        <Video className="size-5 text-green-500" />
+                      ) : (
+                        <FileText className="size-5 text-blue-500" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{analysisFile.name}</p>
+                      <p className="text-xs text-muted-foreground">{(analysisFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                    <button type="button" onClick={() => setAnalysisFile(null)} className="rounded-full p-1 hover:bg-destructive/10">
+                      <X className="size-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 分析按钮 */}
+            <Button className="w-full" disabled={!analysisFile || isAnalyzing} onClick={async () => {
+              if (!analysisFile) return
+              setIsAnalyzing(true)
+              setShowAnalysisUpload(false)
+
+              // 模拟分析过程
+              await new Promise(resolve => setTimeout(resolve, 2000))
+
+              // 模拟分析结果
+              const analysisResult = generateMockAnalysis(analysisFile)
+
+              // 添加到聊天消息
+              setMessages(prev => [...prev,
+                { role: "user", content: `【心理状况分析】上传文件：${analysisFile.name}` },
+                { role: "assitant", content: analysisResult }
+              ])
+
+              // 保存到数据库
+              try {
+                const token = localStorage.getItem("access_token") || ""
+                await createAnalysisReport({
+                  file_name: analysisFile.name,
+                  file_type: analysisFile.type.startsWith("audio") ? "audio" :
+                             analysisFile.type.startsWith("video") ? "video" : "document",
+                  file_size: analysisFile.size,
+                  analysis_result: analysisResult,
+                  conversation_id: activeConvId || null,
+                }, token)
+              } catch {
+                // 保存失败不影响用户体验，只打印错误
+                console.error("保存分析报告到数据库失败")
+              }
+
+              setIsAnalyzing(false)
+              setAnalysisFile(null)
+            }}>
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  分析中...
+                </>
+              ) : (
+                "开始分析"
+              )}
+            </Button>
+
+            {/* 分析中的提示 */}
+            {isAnalyzing && (
+              <div className="mt-3 text-center text-sm text-muted-foreground">
+                AI 正在分析您的档案，请稍候...
+              </div>
             )}
-            开始分析
-          </Button>
+          </div>
         </div>
-      </div>
-
+      )}
     </div>
   )
+}
+
+// 模拟生成心理状况分析
+function generateMockAnalysis(file: File): string {
+  const fileType = file.type.startsWith("audio") ? "音频" : file.type.startsWith("video") ? "视频" : "文档"
+  const fileName = file.name
+
+  return `## 📊 ${fileType}心理状况分析报告
+
+**文件名**：${fileName}
+**分析时间**：${new Date().toLocaleString()}
+
+---
+
+### 🎯 核心发现
+
+基于您上传的${fileType}，AI 分析出以下关键心理指标：
+
+1. **情绪稳定性**：良好（评分 7.5/10）
+   - 情绪波动在正常范围内
+   - 应对策略较为成熟
+
+2. **压力水平**：中等（评分 6.0/10）
+   - 存在轻度工作压力
+   - 建议适当放松和休息
+
+3. **社交倾向**：外向（评分 8.0/10）
+   - 社交能力良好
+   - 人际关系和谐
+
+---
+
+### 💡 专业建议
+
+根据用户档案分析，建议：
+
+1. 🧘 **压力管理**：尝试冥想或深呼吸练习
+2. 🏃 **规律运动**：每周至少 3 次有氧运动
+3. 😴 **睡眠优化**：保持规律作息，睡前 1 小时避免屏幕
+4. 💬 **社交活动**：维持现有的社交频率
+
+---
+
+### 📈 趋势预测
+
+如果保持当前状态，预计未来 2-4 周内：
+- 压力水平可能上升至 6.8/10
+- 情绪稳定性将维持在 7.3-7.8 之间
+
+**建议定期复测以跟踪变化。**
+
+---
+
+> 🤖 此为 AI 模拟分析结果，仅供参考。如有需要，请联系专业心理医生进行深入评估。`
 }

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from pydantic import EmailStr
 from sqlalchemy import DateTime
@@ -7,7 +7,8 @@ from sqlmodel import Field, Relationship, SQLModel
 
 
 def get_datetime_utc() -> datetime:
-    return datetime.now(timezone.utc)
+    """返回北京时间（naive datetime，配合 TIMESTAMP WITHOUT TIMEZONE 使用）"""
+    return datetime.now(timezone(timedelta(hours=8))).replace(tzinfo=None)
 
 
 # Shared properties
@@ -51,9 +52,10 @@ class User(UserBase, table=True):
     hashed_password: str
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
-        sa_type=DateTime(timezone=True),  # type: ignore
+        sa_type=DateTime(timezone=False),  # type: ignore
     )
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    analysis_reports: list["FileAnalysisReport"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -88,7 +90,7 @@ class Item(ItemBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
-        sa_type=DateTime(timezone=True),  # type: ignore
+        sa_type=DateTime(timezone=False),  # type: ignore
     )
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
@@ -127,3 +129,52 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+# Shared properties for file analysis report
+class FileAnalysisReportBase(SQLModel):
+    file_name: str = Field(max_length=255)
+    file_type: str = Field(max_length=50)
+    file_size: int | None = None
+    analysis_result: str
+    conversation_id: str | None = None
+
+
+# Properties to receive on creation
+class FileAnalysisReportCreate(FileAnalysisReportBase):
+    pass
+
+
+# Properties to receive on update
+class FileAnalysisReportUpdate(SQLModel):
+    file_name: str | None = Field(default=None, max_length=255)
+    analysis_result: str | None = None
+
+
+# Database model
+class FileAnalysisReport(FileAnalysisReportBase, table=True):
+    __tablename__ = "file_analysis_report"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime | None = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=False),
+    )
+    owner_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: User | None = Relationship(back_populates="analysis_reports")
+
+
+# Add relationship to User model
+# (will be added via string reference)
+
+
+# Properties to return via API
+class FileAnalysisReportPublic(FileAnalysisReportBase):
+    id: uuid.UUID
+    created_at: datetime | None = None
+
+
+class FileAnalysisReportsPublic(SQLModel):
+    data: list[FileAnalysisReportPublic]
+    count: int
