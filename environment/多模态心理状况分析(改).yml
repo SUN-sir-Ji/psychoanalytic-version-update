@@ -1,0 +1,916 @@
+app:
+  description: 多模态心理状况分析工作流，支持文本、音频、视频输入，综合分析用户心理状态并生成报，并支持智能问答
+  icon: 🧠
+  icon_background: '#E8F4FD'
+  icon_type: emoji
+  mode: advanced-chat
+  name: 多模态心理状况分析(改)
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/minimax:0.0.14@38f89e65d3575f79514dfee49b93f858e8fb9301665a36aeffe800a248a48717
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - document
+      - audio
+      - video
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: true
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: 您好呀，我是您专属的心理医生朋友，您可以上传音频、视频甚至输入一段话来帮你分析您现在的心理状态，也可以输入“智能问答”让我来为您生成你想要的题目进行测试哦！
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: true
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: integration-analysis-source-answer-target
+      selected: false
+      source: integration-analysis
+      sourceHandle: source
+      target: answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: variable-aggregator
+        targetType: llm
+      id: 1776233398371-source-integration-analysis-target
+      selected: false
+      source: '1776233398371'
+      sourceHandle: source
+      target: integration-analysis
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: 1776249036534-source-1776249123773-target
+      selected: false
+      source: '1776249036534'
+      sourceHandle: source
+      target: '1776249123773'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: if-else
+      id: start-source-1777291249124-target
+      selected: false
+      source: start
+      sourceHandle: source
+      target: '1777291249124'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: llm
+      id: 1777291249124-false-1776249036534-target
+      selected: false
+      source: '1777291249124'
+      sourceHandle: 'false'
+      target: '1776249036534'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: 1777291249124-true-1777291645691-target
+      selected: false
+      source: '1777291249124'
+      sourceHandle: 'true'
+      target: '1777291645691'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: 1777291249124-true-1777291705231-target
+      source: '1777291249124'
+      sourceHandle: 'true'
+      target: '1777291705231'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: 1777291249124-true-1777291708440-target
+      source: '1777291249124'
+      sourceHandle: 'true'
+      target: '1777291708440'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: http-request
+      id: 1777291708440-source-1777291720487-target
+      source: '1777291708440'
+      sourceHandle: source
+      target: '1777291720487'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: http-request
+      id: 1777291705231-source-1777291723426-target
+      source: '1777291705231'
+      sourceHandle: source
+      target: '1777291723426'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: http-request
+      id: 1777291645691-source-1777291725932-target
+      source: '1777291645691'
+      sourceHandle: source
+      target: '1777291725932'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: http-request
+        targetType: variable-aggregator
+      id: 1777291725932-source-1776233398371-target
+      source: '1777291725932'
+      sourceHandle: source
+      target: '1776233398371'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: http-request
+        targetType: variable-aggregator
+      id: 1777291723426-source-1776233398371-target
+      source: '1777291723426'
+      sourceHandle: source
+      target: '1776233398371'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: http-request
+        targetType: variable-aggregator
+      id: 1777291720487-source-1776233398371-target
+      source: '1777291720487'
+      sourceHandle: source
+      target: '1776233398371'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 开始
+        type: start
+        variables:
+        - allowed_file_extensions: []
+          allowed_file_types:
+          - audio
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 分析音频
+          max_length: 48
+          options: []
+          required: false
+          type: file
+          variable: audio
+        - allowed_file_extensions: []
+          allowed_file_types:
+          - video
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 分析视频
+          max_length: 48
+          options: []
+          required: false
+          type: file
+          variable: video
+        - allowed_file_extensions: []
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          label: 分析文本
+          max_length: 48
+          options: []
+          required: false
+          type: file
+          variable: text
+      height: 160
+      id: start
+      position:
+        x: -5.743491699052015
+        y: 100.23156759343368
+      positionAbsolute:
+        x: -5.743491699052015
+        y: 100.23156759343368
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1776233398371'
+          - output
+        desc: ''
+        model:
+          completion_params:
+            max_tokens: 3000
+            temperature: 0.5
+          mode: chat
+          name: minimax-m2.7
+          provider: langgenius/minimax/minimax
+        prompt_template:
+        - id: '1'
+          role: system
+          text: '你是一位资深心理咨询师。你的任务是将用户多模态（文本、音频、视频）{{#1776233398371.output#}}的心理分析结果进行综合整合，生成一份全面、专业的心理状况报告。
+
+
+            报告应包括：
+
+            1. 综合评估摘要：对用户整体心理状态的总评
+
+            2. 多模态对比分析：对比不同模态反映的心理状态是否一致
+
+            3. 核心发现：最重要的心理发现和分析结论
+
+            4. 情绪状态详析：详细分析各类情绪表现
+
+            5. 心理需求分析：用户的核心心理需求
+
+            6. 风险评估：是否存在需要关注的心理风险
+
+            7. 积极资源盘点：用户的积极心理资源
+
+            8. 专业建议：基于分析结果给出适当的建议
+
+
+            请用专业、温暖、共情的语言撰写报告，注意：
+
+            - 综合考虑各模态的分析结果
+
+            - 突出显示需要关注的重点
+
+            - 保持客观、专业的态度
+
+            - 适当使用结构化格式提高可读性
+
+            '
+        - id: '2'
+          role: user
+          text: '请整合{{#1776233398371.output#}}多模态心理分析结果，生成综合报告
+
+
+            '
+        selected: false
+        title: 综合心理分析
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 87
+      id: integration-analysis
+      position:
+        x: 1965.8752274736376
+        y: 0.8077319719217257
+      positionAbsolute:
+        x: 1965.8752274736376
+        y: 0.8077319719217257
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        answer: '{{#integration-analysis.text#}}'
+        desc: ''
+        selected: false
+        title: 多模态回复
+        type: answer
+        variables: []
+      height: 102
+      id: answer
+      position:
+        x: 1836.8388880258717
+        y: 183.31680938125078
+      positionAbsolute:
+        x: 1836.8388880258717
+        y: 183.31680938125078
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        advanced_settings:
+          group_enabled: false
+          groups:
+          - groupId: 24a07328-3d40-403d-a070-b82c340cba24
+            group_name: Group1
+            output_type: string
+            variables:
+            - - text-analysis
+              - text
+        desc: ''
+        output_type: string
+        selected: false
+        title: 变量聚合器 2
+        type: variable-aggregator
+        variables:
+        - - '1777290020754'
+          - result1
+        - - '1777290013966'
+          - result2
+        - - '1777290027731'
+          - result3
+      height: 163
+      id: '1776233398371'
+      position:
+        x: 1393.3491674625743
+        y: 95.41490808722972
+      positionAbsolute:
+        x: 1393.3491674625743
+        y: 95.41490808722972
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - sys
+          - query
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}
+
+
+            {{#sys.files#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: minimax-m2.7
+          provider: langgenius/minimax/minimax
+        prompt_template:
+        - id: 407c4f12-2876-47ea-aeda-9ddcb00170d4
+          role: system
+          text: '# 角色
+
+            你是一名专业的心理咨询师，擅长通过对话帮助用户梳理情绪、认识自我、缓解心理压力。
+
+            你的目标不是"聊天"，而是"陪伴与引导"。
+
+
+            # 核心原则
+
+            1. **先倾听，后引导**：不急于给建议，先让用户把话说完
+
+            2. **共情优先**：用"我感受到..."、"听起来..."开头，而非直接给结论
+
+            3. **开放式提问**：多用"能不能跟我多说一点？"、"那种感觉是什么样的？"引导用户深入
+
+            4. **不评判**：无论用户说什么，都不做道德判断
+
+            5. **适度自我披露**：必要时可以温柔地说"我也有过类似的感觉"，但重点始终在用户身上
+
+
+            # 对话风格
+
+            - 语气：温暖、平静、有耐心，像坐在对面的真实医生
+
+            - 句式：多用问句引导，少用结论式陈述
+
+            - 长度：每次回复 2-4 句话，给用户留出发言空间
+
+            - 避免：说教、给具体人生建议、代替用户做决定
+
+            '
+        - id: 61f602c0-217e-4837-bcd6-7f7d56843de4
+          role: user
+          text: '<examples>
+
+
+            <example>
+
+            用户输入：我最近总是睡不好，半夜会醒好几次
+
+            聊天医生回复：听起来这段时间你的睡眠质量不太好，这一定让你白天也很疲惫吧。我想多了解一点——这种情况是从什么时候开始的？最近生活中有没有发生什么变化？
+
+            </example>
+
+
+            <example>
+
+            用户输入：我觉得自己什么都做不好，很失败
+
+            聊天医生回复：我能感受到你现在很沮丧，这种自我怀疑的感觉一定很难受。我想告诉你，能意识到这些情绪本身就需要很大的勇气。能不能跟我说说，最近发生了什么让你有这种感觉？
+
+            </example>
+
+
+            <example>
+
+            用户输入：我跟我爸妈关系一直不好
+
+            聊天医生回复：家庭关系确实是很复杂的事，听起来这可能让你感到很困扰。你愿意跟我说说，通常是哪些事情让你们产生矛盾吗？
+
+            </example>
+
+
+            <example>
+
+            用户输入：没什么想说的，感觉聊这个也没用
+
+            聊天医生回复：我完全理解这种感觉，有时候确实会觉得说话也很累。没关系，我们就这样静静待一会儿也可以。如果你什么时候想说了，我都在这里。
+
+            </example>
+
+
+            </examples>
+
+            '
+        selected: false
+        title: 正常回复
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 87
+      id: '1776249036534'
+      position:
+        x: 704
+        y: 504
+      positionAbsolute:
+        x: 704
+        y: 504
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        answer: '{{#1776249036534.text#}}'
+        desc: ''
+        selected: false
+        title: 直接回复 3
+        type: answer
+        variables: []
+      height: 102
+      id: '1776249123773'
+      position:
+        x: 1046
+        y: 496
+      positionAbsolute:
+        x: 1046
+        y: 496
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        classes:
+        - id: '2'
+          name: '若用户上传内容含有文本文件{{#start.text#}}、音频文件{{#start.audio#}}、视频文件{{#start.video#}}
+
+            '
+        - id: '1776248977259'
+          name: 若用户上传内容不含有上传
+        desc: ''
+        instruction: '你是一个意图解析器，分析用户的输入来判断该进入哪个分类。
+
+          任务：
+
+          分析{{#sys.query#}}的内容
+
+          若包含“智能问答”等相关字段，则输出“智能问答”走分类1。
+
+          若包情感标签，如焦虑，压力等等这种只有标签名词没有主语的，则输出“情感标签”走分类2。
+
+          若是包含主语的，且带有情感色彩语气的，如“我今天好累”，“我不想...”等等，则输出“文本分析”走分类4。
+
+          若都不符合则输出“正常聊天”走分类5。'
+        instructions: ''
+        isInIteration: false
+        isInLoop: false
+        model:
+          completion_params:
+            temperature: 0.41
+          mode: chat
+          name: minimax-m2.7
+          provider: langgenius/minimax/minimax
+        query_variable_selector:
+        - sys
+        - query
+        selected: false
+        title: 问题分类器 (1)
+        topics: []
+        type: question-classifier
+        vision:
+          enabled: false
+      height: 173
+      id: '17772912405710'
+      position:
+        x: 152.29142496778124
+        y: 676.8178483104898
+      positionAbsolute:
+        x: 152.29142496778124
+        y: 676.8178483104898
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: exists
+            id: 0226136d-290c-4377-a668-65705d92054f
+            value: ''
+            varType: file
+            variable_selector:
+            - start
+            - audio
+          - comparison_operator: exists
+            id: 71eda36d-4c7f-471d-a728-d5300d63f436
+            value: ''
+            varType: file
+            variable_selector:
+            - start
+            - video
+          - comparison_operator: exists
+            id: 51a9d5e6-98a2-413d-84b6-0a26cd5e09e0
+            value: ''
+            varType: file
+            variable_selector:
+            - start
+            - text
+          - comparison_operator: contains
+            id: bf3c2c6e-0dce-46a6-91d6-d2b88df1e7a6
+            sub_variable_condition:
+              case_id: d987adc0-ef18-490b-8b1f-e29417893ce2
+              conditions:
+              - comparison_operator: in
+                id: e7c67f66-42af-48ae-a884-c13de1797d69
+                key: type
+                value:
+                - audio
+                varType: string
+              - comparison_operator: in
+                id: 9982336e-7d8e-41a5-9138-1d71794e6720
+                key: type
+                value:
+                - document
+                varType: string
+              - comparison_operator: in
+                id: e817fae2-7ab6-494c-a652-f7ca9872eace
+                key: type
+                value:
+                - video
+                varType: string
+              logical_operator: or
+            value: ''
+            varType: array[file]
+            variable_selector:
+            - sys
+            - files
+          id: 'true'
+          logical_operator: or
+        selected: false
+        title: 条件分支
+        type: if-else
+      height: 273
+      id: '1777291249124'
+      position:
+        x: 369.3004741697339
+        y: 149.58559858585667
+      positionAbsolute:
+        x: 369.3004741697339
+        y: 149.58559858585667
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data: []
+          type: none
+        headers: ''
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        ssl_verify: true
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: HTTP 请求
+        type: http-request
+        url: ''
+        variables: []
+      height: 81
+      id: '1777291645691'
+      position:
+        x: 722.8714727254566
+        y: 53.13016601895991
+      positionAbsolute:
+        x: 722.8714727254566
+        y: 53.13016601895991
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data: []
+          type: none
+        headers: ''
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        ssl_verify: true
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: HTTP 请求 2
+        type: http-request
+        url: ''
+        variables: []
+      height: 81
+      id: '1777291705231'
+      position:
+        x: 716.9489890063658
+        y: 183.31680938125078
+      positionAbsolute:
+        x: 716.9489890063658
+        y: 183.31680938125078
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data: []
+          type: none
+        headers: ''
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: true
+        ssl_verify: true
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: HTTP 请求 3
+        type: http-request
+        url: ''
+        variables: []
+      height: 81
+      id: '1777291708440'
+      position:
+        x: 722.8714727254566
+        y: 331.07700711509824
+      positionAbsolute:
+        x: 722.8714727254566
+        y: 331.07700711509824
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data: []
+          type: none
+        headers: ''
+        method: get
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        ssl_verify: true
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: HTTP 请求 4
+        type: http-request
+        url: ''
+        variables: []
+      height: 81
+      id: '1777291720487'
+      position:
+        x: 1024.8714727254564
+        y: 331.07700711509824
+      positionAbsolute:
+        x: 1024.8714727254564
+        y: 331.07700711509824
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data: []
+          type: none
+        headers: ''
+        method: get
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        ssl_verify: true
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: HTTP 请求 5
+        type: http-request
+        url: ''
+        variables: []
+      height: 81
+      id: '1777291723426'
+      position:
+        x: 1018.9489890063658
+        y: 183.31680938125078
+      positionAbsolute:
+        x: 1018.9489890063658
+        y: 183.31680938125078
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data: []
+          type: none
+        headers: ''
+        method: get
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        ssl_verify: true
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: HTTP 请求 6
+        type: http-request
+        url: ''
+        variables: []
+      height: 81
+      id: '1777291725932'
+      position:
+        x: 1024.8714727254564
+        y: 53.13016601895991
+      positionAbsolute:
+        x: 1024.8714727254564
+        y: 53.13016601895991
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: -203.8939045324364
+      y: 164.95956446547302
+      zoom: 0.8819447397847262
+  rag_pipeline_variables: []

@@ -219,6 +219,26 @@ export async function getConversations(
   return response.json()
 }
 
+export async function getConversationCount(
+  user: string,
+  apiKey?: string
+): Promise<number> {
+  let count = 0
+  let lastId: string | undefined = undefined
+  let hasMore = true
+
+  while (hasMore) {
+    const result = await getConversations(user, { lastId, limit: 100, apiKey })
+    count += result.data.length
+    hasMore = result.has_more
+    if (result.data.length > 0) {
+      lastId = result.data[result.data.length - 1].id
+    }
+  }
+
+  return count
+}
+
 export async function getMessages(
   user: string,
   conversationId: string,

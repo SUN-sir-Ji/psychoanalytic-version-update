@@ -17,6 +17,8 @@ import {
   TrendingUp,
   ChevronRight,
 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { getConversationCount, DIFY_AI_DOCTOR_API_KEY, DIFY_TEST_API_KEY } from "@/services/difyApi"
 
 export const Route = createFileRoute("/user/")({
   component: UserHome,
@@ -29,12 +31,8 @@ export const Route = createFileRoute("/user/")({
   }),
 })
 
-// ===== Mock 数据（后续替换为真实数据源） =====
-const MOCK_STATS = {
-  chatCount: 12,
-  testCount: 5,
-  streakDays: 7,
-}
+// ===== 动态统计数据 =====
+const USER = "default-user" // 与 ai-doctor.tsx / test.tsx 保持一致
 
 const MOCK_TREND = [
   { day: "周一", score: 62 },
@@ -151,6 +149,10 @@ function getLevelBadge(level: string) {
 
 // ===== 主页面 =====
 function UserHome() {
+  const [chatCount, setChatCount] = useState(0)
+  const [testCount, setTestCount] = useState(0)
+  const [streakDays, setStreakDays] = useState(0)
+  const [loading, setLoading] = useState(true)
   const quote = getQuoteOfTheDay()
   const today = new Date()
   const dateStr = today.toLocaleDateString("zh-CN", {
@@ -159,6 +161,24 @@ function UserHome() {
     day: "numeric",
     weekday: "long",
   })
+
+  useEffect(() => {
+    async function fetchCounts() {
+      try {
+        const [chat, test] = await Promise.all([
+          getConversationCount(USER, DIFY_AI_DOCTOR_API_KEY),
+          getConversationCount(USER, DIFY_TEST_API_KEY),
+        ])
+        setChatCount(chat)
+        setTestCount(test)
+      } catch (err) {
+        console.error("获取会话统计失败:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchCounts()
+  }, [])
 
   return (
     <div className="mx-auto max-w-6xl flex flex-col gap-6 p-6 md:p-8">
@@ -179,7 +199,7 @@ function UserHome() {
             </div>
             <div>
               <p className="text-muted-foreground text-xs font-medium">对话次数</p>
-              <p className="text-2xl font-bold">{MOCK_STATS.chatCount}</p>
+              <p className="text-2xl font-bold">{loading ? "--" : chatCount}</p>
             </div>
           </CardContent>
         </Card>
@@ -191,7 +211,7 @@ function UserHome() {
             </div>
             <div>
               <p className="text-muted-foreground text-xs font-medium">测评次数</p>
-              <p className="text-2xl font-bold">{MOCK_STATS.testCount}</p>
+              <p className="text-2xl font-bold">{loading ? "--" : testCount}</p>
             </div>
           </CardContent>
         </Card>
@@ -203,7 +223,7 @@ function UserHome() {
             </div>
             <div>
               <p className="text-muted-foreground text-xs font-medium">连续使用天数</p>
-              <p className="text-2xl font-bold">{MOCK_STATS.streakDays}</p>
+              <p className="text-2xl font-bold">{streakDays}</p>
             </div>
           </CardContent>
         </Card>
